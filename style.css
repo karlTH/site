@@ -1,0 +1,291 @@
+body {
+margin : 0 ;
+padding : 0 ; 
+background : #212121 url(images/bg-site.jpg) repeat; 
+text-align : center;
+font-size : 0.7em;
+color : #777474 ;
+font-family : verdana ;
+background-attachment : fixed;
+}
+  
+/*  SITE
+********************************************************************/
+ 
+#site { 
+width : 896px;
+margin : 0 auto;
+text-align : left  ;
+}
+     
+/*  HEADER
+********************************************************************/
+   
+#header {
+position : relative ; 
+height : 173px;
+background : url(images/header.jpg) ; 
+}
+#header2 {
+position : relative ; 
+height : 173px;
+background : url(images/header2.jpg) ; 
+}
+
+/*  HEADER >> TITRE DU SITE >> H1
+********************************************************************/
+
+#header h1 {
+position : absolute ;
+bottom : 10px ; 
+right : 50px ; 
+margin : 0;
+padding : 0 ; 
+font-size : 2em ;
+font-weight : normal;  
+}
+
+#header h1 a {
+color : #FFFFFF;
+text-decoration : none; 
+}
+
+/*  HEADER >> MENU PRINCIPAL
+********************************************************************/
+   
+#menu {
+position : absolute ; 
+bottom : 0 ;
+left : 25px; 
+}
+	
+#menu  ul{
+list-style : none ;
+margin : 0; 
+padding : 0 ;
+}
+
+#menu  li{
+float : left ;
+text-transform : uppercase ;
+height : 46px;
+line-height : 42px;
+background : url(images/bg-li-menu.jpg) right no-repeat;  
+}
+	
+#menu  li a{
+margin : 0 ; 
+padding : 0 15px  ; 
+text-decoration : none ;    
+color : #FFFFFF ;
+font-weight : bold ;
+}
+
+#menu li a:hover {
+color : #F7F4D5
+}
+	
+/*  CONTENT
+********************************************************************/
+
+#main {
+overflow : auto ;
+background : url(images/bg-contentb.jpg) center repeat-y; 
+}
+ 
+/*  CONTENT >> CENTRAGE
+********************************************************************/
+
+#centrage {
+padding : 0 0 0 6px;  
+}
+	
+/*  CONTENU
+********************************************************************/	
+	
+#contenu {
+width : 458px ;  
+float  : left ;
+margin : 0;
+padding : 20px 10px 0 20px ;
+}
+   
+/*  CONTENU >> POST
+********************************************************************/	
+
+.post {
+padding : 0 0 20px 0;
+}   
+
+.post h2 {
+font-size : 1.6em ; 
+padding :  0 ; 
+margin: 0 ;
+color : #000; 
+font-weight : normal; 
+}
+
+.post .sous-h2 {
+margin : 0 ;
+padding : 0;
+color : #ed581e ;
+font-size : 110%; 
+}
+   
+.post img {
+float  : right ;
+margin : 0 10px 5px 20px;
+}
+
+.post a {
+color : #ed581e;
+font-weight : bold ;  
+}
+
+/*  SIDE RIGHT
+********************************************************************/
+
+#side {
+width : 196px ;
+float  : right ;
+padding :  0  ;
+text-align : justify;  
+}
+	
+#side h2 {
+font-size : 1em ;
+margin : 0  ;
+padding :  0 0 0 10px ; 
+font-weight: bold ;
+color : #000 ; 
+background : url(images/side-h2.jpg);
+height : 35px;
+line-height : 35px;
+text-transform : uppercase;
+font-weight : normal;
+}
+	
+#side ul{
+list-style : none ; 
+margin : 5px 0 15px 0 ; 
+padding : 0; 
+color : #000
+}
+ 
+#side li{
+margin : 0 ; 
+padding : 0 0 5px 0;
+border-top : 1px solid #ccc;  
+}
+  
+#side li a{
+padding : 0 0 0 20px; 
+ display : block ;
+height : 25px;
+line-height : 25px; 
+text-decoration : none ; 
+color : #000;   
+}
+
+#side li:first-child {
+border-top: 0; 
+}
+
+#side li a:hover{
+color : #3F3F3F ;
+}
+
+#side p{
+margin : 10px 0 25px 0 ; 
+padding : 0;  
+}
+
+#side form {
+margin : 0;
+padding : 20px 0 0 0;
+height : 50px;  
+}
+
+#side input {
+float : left ; 
+margin : 0;
+padding : 0; 
+}
+
+#side .champ {
+width : 115px ;
+height : 23px;
+border-top  : 1px solid #E2E2E2;
+border-left  : 1px solid #E2E2E2;
+border-bottom  : 1px solid #E2E2E2;
+border-right : 0;   
+}
+
+#side .recherche {
+background : url(images/search.html);
+height : 25px;
+width : 67px;
+border : 0; 
+}
+
+/*  SIDE LEFT
+********************************************************************/
+   
+#side-left {
+width : 176px ;
+float  : left ;
+padding :  20px 0 0 10px ;
+text-align : justify; 
+color : #ffffff; 
+}
+  
+#side-left h2 {
+font-size : 1.4em ;
+margin : 0 0 10px 0  ;
+padding :  0 ; 
+color : #000000 ; 
+}
+
+#side-left h3 {
+font-size : 1em ;
+margin : 10px 0 0 0  ;
+padding :  0 ; 
+color : #000000 ; 
+}
+
+#side-left p {
+margin : 0 0 5px 0;
+padding : 0;  
+}
+
+/*  FOOTER
+*******************************************************************/ 
+   
+#footer { 
+height :63px;
+text-align : center ;
+background : center black ;   
+width : 895px;
+
+}
+
+#footer p { 
+margin : 0 ;
+padding : 15px 0 0 0;  
+color : #FFFFFF; 
+}
+
+#footer a { 
+color : #FFFFFF;
+text-decoration : none ;  
+}
+
+#footer a:hover { 
+text-decoration : underline ;  
+}
+   
+   
+ 
+
+
+
