@@ -1,105 +1,64 @@
-<!DOCTYPE html>
- <html>
-    <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>GeoAR.js demo</title>
-    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-    <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
-	
-	
-	<script src="Babylon.js"></script>
-<script src="babylon.stlFileLoader.js"></script>
-  <script type="text/javascript">
-    AFRAME.registerComponent('drag-rotate-move-component', {
-      schema: {
-        speed: { default: 4 },
-        zoomSpeed: { default: 0.5 },
-        moveSpeed: { default: 0.01 } // Ajout de la vitesse de déplacement
-      },
-      init: function () {
-        this.ifMouseDown = false;
-        this.ifMiddleMouseDown = false; // Nouvelle variable pour le clic du milieu
-        this.x_cord = 0;
-        this.y_cord = 0;
-        this.targetPosition = new THREE.Vector3(); // Nouvelle variable pour la position de l'élément
-        document.addEventListener('mousedown', this.OnDocumentMouseDown.bind(this));
-        document.addEventListener('mouseup', this.OnDocumentMouseUp.bind(this));
-        document.addEventListener('mousemove', this.OnDocumentMouseMove.bind(this));
-        document.addEventListener('wheel', this.OnDocumentMouseWheel.bind(this));
-        document.addEventListener('contextmenu', function (e) { e.preventDefault(); }); // Désactive le menu contextuel
-      },
-      OnDocumentMouseDown: function (event) {
-        if (event.button === 0) {
-          this.ifMouseDown = true;
-          this.x_cord = event.clientX;
-          this.y_cord = event.clientY;
-        } else if (event.button === 1) {
-          this.ifMiddleMouseDown = true;
-        }
-      },
-      OnDocumentMouseUp: function (event) {
-        if (event.button === 0) {
-          this.ifMouseDown = false;
-        } else if (event.button === 1) {
-          this.ifMiddleMouseDown = false;
-        }
-      },
-      OnDocumentMouseMove: function (event) {
-        if (this.ifMouseDown) {
-          var temp_x = event.clientX - this.x_cord;
-          var temp_y = event.clientY - this.y_cord;
-          if (Math.abs(temp_y) < Math.abs(temp_x)) {
-            this.el.object3D.rotateY(temp_x * this.data.speed / 1000);
-          } else {
-            this.el.object3D.rotateX(temp_y * this.data.speed / 1000);
-          }
-          this.x_cord = event.clientX;
-          this.y_cord = event.clientY;
-        } else if (this.ifMiddleMouseDown) {
-          // Déplacement lorsque le clic du milieu est enfoncé
-          var deltaX = event.clientX - this.x_cord;
-          var deltaY = event.clientY - this.y_cord;
-          this.x_cord = event.clientX;
-          this.y_cord = event.clientY;
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>webcam background et import stl model</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
 
-          // Convertit le mouvement de la souris en déplacement dans la scène
-          var distance = this.el.object3D.position.distanceTo(this.targetPosition);
-          var factor = distance / 500; // Ajustez ce facteur selon vos besoins
-          var moveX = deltaX * factor;
-          var moveY = deltaY * factor;
+  <!-- Babylon globals (kept so window.BABYLON is available if your app expects it) -->
+  <script src="https://assets.babylonjs.com/generated/Assets.js"></script>
+  <script src="https://cdn.babylonjs.com/recast.js"></script>
+  <script src="https://cdn.babylonjs.com/ammo.js"></script>
+  <script src="https://cdn.babylonjs.com/havok/HavokPhysics_umd.js"></script>
+  <script src="https://cdn.babylonjs.com/cannon.js"></script>
+  <script src="https://cdn.babylonjs.com/Oimo.js"></script>
+  <script src="https://cdn.babylonjs.com/earcut.min.js"></script>
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+  <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+  <script src="https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+  <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+  <script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+  <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+  <script src="https://cdn.babylonjs.com/addons/babylonjs.addons.min.js"></script>
+  <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
 
-          // Met à jour la position cible
-        this.el.object3D.position.x += moveX;
-        this.el.object3D.position.y -= moveY; // Inversé pour correspondre à la direction du mouvement de la souris
-        }
-      },
-      OnDocumentMouseWheel: function (event) {
-        var delta = event.deltaY;
-        var scale = 1 + delta * this.data.zoomSpeed / 1000;
-        this.el.object3D.scale.multiplyScalar(scale);
-      }
-    });
+  <style>
+    html,body,#renderCanvas{width:100%;height:100%;margin:0;padding:0;overflow:hidden;background:#000}
+  </style>
+</head>
+<body>
+  <canvas id="renderCanvas"></canvas>
+  <script type="module">
+    // Turn bundle text into a module URL
+    const code = "// snapshot:index.js\nvar createScene = function() {\n  const scene = new BABYLON.Scene(engine);\n  scene.createDefaultEnvironment({\n    createGround: false,\n    createSkybox: false\n  });\n  const camera = new BABYLON.ArcRotateCamera(\"mainCam\", Math.PI, Math.PI, 3, BABYLON.Vector3.Zero(), scene, true);\n  camera.attachControl(canvas, true);\n  camera.attachControl(canvas);\n  const light = new BABYLON.DirectionalLight(\"sun\", new BABYLON.Vector3(0, 0, 0), scene);\n  const videoLayer = new BABYLON.Layer(\"videoLayer\", null, scene, true);\n  const videoTexture = BABYLON.VideoTexture.CreateFromWebCam(\n    scene,\n    (videoTexture2) => {\n      videoTexture2._invertY = false;\n      videoTexture2;\n      videoLayer.texture = videoTexture2;\n    },\n    {\n      minWidth: 640,\n      minHeight: 480,\n      maxWidth: 1920,\n      maxHeight: 1080,\n      deviceId: \"\"\n    }\n  );\n  var filesInput = new BABYLON.FilesInput(engine, null, scene, null, null, null, function() {\n    BABYLON.Tools.ClearLogCache();\n  }, null, null);\n  const assetsManager = new BABYLON.AssetsManager(scene);\n  filesInput.onProcessFileCallback = function(file, name, extension) {\n    console.log(\"done: \" + typeof file + \" \" + name + \" \" + extension);\n    const task = new BABYLON.ContainerAssetTask(\"task\", \"\", \"\", file);\n    assetsManager._tasks.push(task);\n    console.log(\"add assets manager task\");\n  }.bind(this);\n  filesInput.reload = function() {\n  };\n  filesInput.monitorElementForDragNDrop(canvas);\n  assetsManager.onTaskSuccess = function(task) {\n    console.log(\"task success\", task);\n    task.loadedMeshes && task.loadedMeshes.forEach((mesh) => {\n      scene.addMesh(mesh);\n      mesh.computeWorldMatrix(true);\n      const size = mesh.getBoundingInfo().boundingBox.extendSizeWorld;\n      const maxDim = Math.max(size.x, size.y, size.z);\n      const targetSize = 2;\n      const scale = targetSize / maxDim;\n      mesh.scaling.scaleInPlace(scale);\n    });\n  };\n  const gui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI(\n    \"myUI\"\n  );\n  const button = BABYLON.GUI.Button.CreateSimpleButton(\"bt\", \"D\\xE9poser le STL dans la page puis cliquer sur ce bouton\");\n  button.onPointerClickObservable.add(() => {\n    assetsManager.load();\n  });\n  button.width = \"300px\";\n  button.height = \"25px\";\n  button.background = \"white\";\n  button.fontSize = \"12\";\n  button.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;\n  button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;\n  gui.addControl(button);\n  return scene;\n};\nvar index_default = createScene;\nexport {\n  index_default as default\n};\n//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsic25hcHNob3Q6aW5kZXguanMiXSwKICAic291cmNlc0NvbnRlbnQiOiBbInZhciBjcmVhdGVTY2VuZSA9IGZ1bmN0aW9uKCkge1xuICAgIGNvbnN0IHNjZW5lID0gbmV3IEJBQllMT04uU2NlbmUoZW5naW5lKTtcbiAgICBzY2VuZS5jcmVhdGVEZWZhdWx0RW52aXJvbm1lbnQoe1xuICAgICAgICBjcmVhdGVHcm91bmQ6IGZhbHNlLFxuICAgICAgICBjcmVhdGVTa3lib3g6IGZhbHNlXG4gICAgfSk7XG4gICAgY29uc3QgY2FtZXJhID0gbmV3IEJBQllMT04uQXJjUm90YXRlQ2FtZXJhKCdtYWluQ2FtJywgTWF0aC5QSSwgTWF0aC5QSSwgMywgQkFCWUxPTi5WZWN0b3IzLlplcm8oKSwgc2NlbmUsIHRydWUpO1xuXHRjYW1lcmEuYXR0YWNoQ29udHJvbChjYW52YXMsIHRydWUpO1xuICAgIGNhbWVyYS5hdHRhY2hDb250cm9sKGNhbnZhcyk7XG4gICAgY29uc3QgbGlnaHQgPSBuZXcgQkFCWUxPTi5EaXJlY3Rpb25hbExpZ2h0KCdzdW4nLCBuZXcgQkFCWUxPTi5WZWN0b3IzKDAsIDAsIDApLCBzY2VuZSk7XG4gICAgXG4gICAgY29uc3QgdmlkZW9MYXllciA9IG5ldyBCQUJZTE9OLkxheWVyKCd2aWRlb0xheWVyJywgbnVsbCwgc2NlbmUsIHRydWUpO1xuICAgIGNvbnN0IHZpZGVvVGV4dHVyZSA9IEJBQllMT05cbiAgICAgICAgLlZpZGVvVGV4dHVyZVxuICAgICAgICAuQ3JlYXRlRnJvbVdlYkNhbShcbiAgICAgICAgICAgIHNjZW5lLCAodmlkZW9UZXh0dXJlKSA9PiB7XG4gICAgICAgICAgICAgICAgdmlkZW9UZXh0dXJlLl9pbnZlcnRZID0gZmFsc2U7XG4gICAgICAgICAgICAgICAgdmlkZW9UZXh0dXJlXG4gICAgICAgICAgICAgICAgdmlkZW9MYXllci50ZXh0dXJlID0gdmlkZW9UZXh0dXJlO1xuICAgICAgICAgICAgfSwge1xuICAgICAgICAgICAgICAgIG1pbldpZHRoOiA2NDAsXG4gICAgICAgICAgICAgICAgbWluSGVpZ2h0OiA0ODAsXG4gICAgICAgICAgICAgICAgbWF4V2lkdGg6IDE5MjAsXG4gICAgICAgICAgICAgICAgbWF4SGVpZ2h0OiAxMDgwLFxuICAgICAgICAgICAgICAgIGRldmljZUlkOiAnJ1xuICAgICAgICAgICAgfSk7XG52YXIgZmlsZXNJbnB1dCA9IG5ldyBCQUJZTE9OLkZpbGVzSW5wdXQoZW5naW5lLCBudWxsLCBzY2VuZSwgbnVsbCwgbnVsbCwgbnVsbCwgZnVuY3Rpb24gKCkge1xuICAgICAgICBCQUJZTE9OLlRvb2xzLkNsZWFyTG9nQ2FjaGUoKVxuICAgIH0sIG51bGwsIG51bGwpO1xuXG5cbiBjb25zdCBhc3NldHNNYW5hZ2VyID0gbmV3IEJBQllMT04uQXNzZXRzTWFuYWdlcihzY2VuZSk7XG4gICAgZmlsZXNJbnB1dC5vblByb2Nlc3NGaWxlQ2FsbGJhY2sgPSAoZnVuY3Rpb24oZmlsZSwgbmFtZSwgZXh0ZW5zaW9uKSB7XG4gICAgICAgIGNvbnNvbGUubG9nKFwiZG9uZTogXCIgKyAodHlwZW9mIGZpbGUpICsgXCIgXCIgKyBuYW1lICsgXCIgXCIgKyBleHRlbnNpb24pO1xuICAgICAgICAvKkJBQllMT04uU2NlbmVMb2FkZXIuQXBwZW5kKFwiXCIsIGZpbGUsIHNjZW5lLCAoc2NlbmUpID0+IHtcbiAgICAgICAgICAgIGNvbnNvbGUubG9nKCdzdWNjZXNzIGxvYWRpbmcnKTtcbiAgICAgICAgfSk7Ki9cbiAgICAgICAgLy8gZFx1MDBFOXBvc2UgZHUgZmljaGllclxuICAgICAgICBjb25zdCB0YXNrID0gbmV3IEJBQllMT04uQ29udGFpbmVyQXNzZXRUYXNrKFwidGFza1wiLCBcIlwiLCBcIlwiLCBmaWxlKTtcbiAgICAgICAgYXNzZXRzTWFuYWdlci5fdGFza3MucHVzaCh0YXNrKTtcbiAgICAgICAgY29uc29sZS5sb2coJ2FkZCBhc3NldHMgbWFuYWdlciB0YXNrJyk7XG4gICAgfSkuYmluZCh0aGlzKTtcbiAgICBmaWxlc0lucHV0LnJlbG9hZCA9IGZ1bmN0aW9uKCl7fTtcbiAgICBmaWxlc0lucHV0Lm1vbml0b3JFbGVtZW50Rm9yRHJhZ05Ecm9wKGNhbnZhcyk7XG5cbiAgICBhc3NldHNNYW5hZ2VyLm9uVGFza1N1Y2Nlc3MgPSBmdW5jdGlvbiAodGFzaykge1xuICAgICAgICBjb25zb2xlLmxvZygndGFzayBzdWNjZXNzJywgdGFzayk7ICAgICAgICBcbiAgICAgICAgdGFzay5sb2FkZWRNZXNoZXMgJiYgdGFzay5sb2FkZWRNZXNoZXMuZm9yRWFjaCgobWVzaCkgPT4ge1xuICAgICAgICAgICAgXG4gICAgICAgICAgICBzY2VuZS5hZGRNZXNoKG1lc2gpO1xuICAgICAgICAgICAvLyBidXR0b24uaXNWaXNpYmxlID0gZmFsc2VcbiAgICAgICAgICAgIC8vdGFzay5sb2FkZWRNZXNoZXNbMF0ubm9ybWFsaXplVG9Vbml0Q3ViZSgpO1xuICAgICAgICAgICAvLyB0YXNrLmxvYWRlZE1lc2hlc1swXS5CQUJZTE9OLlZlY3RvcjMuWmVybygpXG4gICAgICAgICAgIG1lc2guY29tcHV0ZVdvcmxkTWF0cml4KHRydWUpO1xuICAgICAgICAgICBjb25zdCBzaXplID0gbWVzaC5nZXRCb3VuZGluZ0luZm8oKS5ib3VuZGluZ0JveC5leHRlbmRTaXplV29ybGQ7XG4gICAgICAgICAgIGNvbnN0IG1heERpbSA9IE1hdGgubWF4KHNpemUueCwgc2l6ZS55LCBzaXplLnopO1xuICAgICAgICAgICBjb25zdCB0YXJnZXRTaXplID0gMjsgLy8gZXg6IDIgbVx1MDBFOHRyZXNcbiAgICAgICAgICAgY29uc3Qgc2NhbGUgPSB0YXJnZXRTaXplIC8gbWF4RGltO1xuICAgICAgICAgICBtZXNoLnNjYWxpbmcuc2NhbGVJblBsYWNlKHNjYWxlKTtcbiAgICAgICAgfSk7XG4gICAgICAgIFxuICAgIH1cblxuICAgIGNvbnN0IGd1aSA9IEJBQllMT04uR1VJLkFkdmFuY2VkRHluYW1pY1RleHR1cmUuQ3JlYXRlRnVsbHNjcmVlblVJKFxuICBcIm15VUlcIlxuKTtcbiAgICBjb25zdCBidXR0b24gPSBCQUJZTE9OLkdVSS5CdXR0b24uQ3JlYXRlU2ltcGxlQnV0dG9uKFwiYnRcIiwgXCJEXHUwMEU5cG9zZXIgbGUgU1RMIGRhbnMgbGEgcGFnZSBwdWlzIGNsaXF1ZXIgc3VyIGNlIGJvdXRvblwiKTtcbiAgICBidXR0b24ub25Qb2ludGVyQ2xpY2tPYnNlcnZhYmxlLmFkZCgoKSA9PiB7XG4gICAgICAgIGFzc2V0c01hbmFnZXIubG9hZCgpO1xuICAgIH0pO1xuICAgIC8vYnV0dG9uLnRvcD0nMjBweCc7XG4gICAgLy9idXR0b24ubGVmdD0nMjBweCc7XG4gICAgYnV0dG9uLndpZHRoID0gJzMwMHB4JztcbiAgICBidXR0b24uaGVpZ2h0ID0gJzI1cHgnO1xuICAgIGJ1dHRvbi5iYWNrZ3JvdW5kID0gJ3doaXRlJztcbiAgICBidXR0b24uZm9udFNpemU9ICcxMic7XG4gICAgYnV0dG9uLnZlcnRpY2FsQWxpZ25tZW50ID0gQkFCWUxPTi5HVUkuQ29udHJvbC5WRVJUSUNBTF9BTElHTk1FTlRfVE9QO1xuICAgIGJ1dHRvbi5ob3Jpem9udGFsQWxpZ25tZW50ID0gQkFCWUxPTi5HVUkuQ29udHJvbC5IT1JJWk9OVEFMX0FMSUdOTUVOVF9SSUdIVDtcblxuICAgIGd1aS5hZGRDb250cm9sKGJ1dHRvbik7XG5cbiAgICByZXR1cm4gc2NlbmU7XG5cbn07XG5leHBvcnQgZGVmYXVsdCBjcmVhdGVTY2VuZVxuXG4vLyMgc291cmNlVVJMPWZpbGU6Ly8vcGcvaW5kZXguanMiXSwKICAibWFwcGluZ3MiOiAiO0FBQUEsSUFBSSxjQUFjLFdBQVc7QUFDekIsUUFBTSxRQUFRLElBQUksUUFBUSxNQUFNLE1BQU07QUFDdEMsUUFBTSx5QkFBeUI7QUFBQSxJQUMzQixjQUFjO0FBQUEsSUFDZCxjQUFjO0FBQUEsRUFDbEIsQ0FBQztBQUNELFFBQU0sU0FBUyxJQUFJLFFBQVEsZ0JBQWdCLFdBQVcsS0FBSyxJQUFJLEtBQUss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\n";
+    const blob = new Blob([code], { type: 'text/javascript' });
+    const url = URL.createObjectURL(blob);
+
+    const BABYLON = window.BABYLON;
+    const canvas = document.getElementById('renderCanvas');
+
+    // Import your bundled app (which exports createScene / default)
+    const mod = await import(url);
+
+    let engine = null;
+    if (typeof mod.createEngine === 'function') {
+      try { engine = await mod.createEngine(); } catch {}
+    }
+    if (!engine) {
+      engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+    }
+    window.engine = engine; window.canvas = canvas;
+
+    let createScene = mod.createScene || mod.default;
+    if (!createScene && mod.Playground?.CreateScene) createScene = (e,c)=>mod.Playground.CreateScene(e,c);
+    if (!createScene) throw new Error('No createScene() export found.');
+
+    const scene = await (createScene(engine, canvas) ?? createScene());
+    engine.runRenderLoop(()=>scene.render());
+    addEventListener('resize', ()=>engine.resize());
+
+    addEventListener('unload', ()=> URL.revokeObjectURL(url));
   </script>
-  </head>
-
-  <body>
-    <a-scene
-      vr-mode-ui="enabled: false"
-      arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;"
-    >
- 
-
-<a-entity obj-model="obj: url(https://d2z6pp1b5cghw2.cloudfront.net/3f805b32-c95d-4109-b10f-308be54f718f/model.obj); mtl: url(https://d2z6pp1b5cghw2.cloudfront.net/3f805b32-c95d-4109-b10f-308be54f718f/model.mtl);" scale="0.5 0.5 0.5" rotation="0 90 0" position="0d 1.5 -2" drag-rotate-move-component ></a-entity>
-
-
-  
-
-
-
-      <a-camera   look-controls="enabled:false"></a-camera>
-	<a-cursor></a-cursor>
-    </a-scene>
-  </body>
+</body>
 </html>
